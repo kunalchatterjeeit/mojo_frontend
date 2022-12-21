@@ -6,5 +6,6 @@
 export const environment = {
   production: false,
   directBaseUrl: 'http://localhost:8000/api/v1',
-  baseUrl: 'http://localhost:5126/api'
+  identityBaseUrl: 'http://localhost:5126/api',
+  apigatewayBaseUrl: 'http://localhost:5147/mojo'
 };

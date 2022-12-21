@@ -1,0 +1,129 @@
+<div class="main-content">
+    <div class="container-fluid">
+        <div class="row">
+            <div class="col-md-6">
+                <div class="card">
+                    <div class="card-header card-header-danger">
+                        <h4 class="card-title">Choose Subscription</h4>
+                        <p class="card-category">Complete your Subscription</p>
+                    </div>
+                    <div class="card-body">
+                        <form>
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <mat-form-field class="example-full-width">
+                                        <input matInput placeholder="Company" disabled [value]="companyName"
+                                            #txtCompany>
+                                    </mat-form-field>
+                                </div>
+                                <div class="col-md-6">
+                                    <mat-form-field class="example-full-width">
+                                        <input matInput placeholder="Name" disabled [value]="name" #txtName>
+                                    </mat-form-field>
+                                </div>
+                            </div>
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <mat-form-field class="example-full-width">
+                                        <input matInput placeholder="Phone" disabled [value]="phone" #txtPhone>
+                                    </mat-form-field>
+                                </div>
+                                <div class="col-md-6">
+                                    <mat-form-field class="example-full-width">
+                                        <input matInput placeholder="Email" disabled [value]="email" #txtEmail>
+                                    </mat-form-field>
+                                </div>
+                            </div>
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <mat-form-field appearance="fill">
+                                        <mat-label>{{ddlFileCategoryStatus}}</mat-label>
+                                        <mat-select #ddlPlan (selectionChange)="planOnChange($event.value)">
+                                            <mat-option *ngFor="let plan of planList" [value]="plan.PlanId">
+                                                {{plan.Name}}
+                                            </mat-option>
+                                        </mat-select>
+                                    </mat-form-field>
+                                </div>
+                                <div class="col-md-3">
+                                    <mat-form-field class="example-full-width">
+                                        <input matInput placeholder="Price" disabled [value]="price" #txtPrice>
+                                    </mat-form-field>
+                                </div>
+                                <div class="col-md-3">
+                                    <mat-form-field class="example-full-width">
+                                        <input matInput placeholder="Currency" disabled [value]="currency" #txtCurrency>
+                                    </mat-form-field>
+                                </div>
+                            </div>
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <mat-form-field class="example-full-width">
+                                        <input matInput placeholder="Card No" #txtCardNo>
+                                    </mat-form-field>
+                                </div>
+                                <div class="col-md-6">
+                                    <mat-form-field class="example-full-width">
+                                        <input matInput placeholder="Name on Card" #txtNameOnCard>
+                                    </mat-form-field>
+                                </div>
+                            </div>
+                            <div class="row">
+                                <div class="col-md-3">
+                                    <mat-form-field class="example-full-width">
+                                        <input matInput placeholder="Expiry DD" #txtExpiryDD>
+                                    </mat-form-field>
+                                </div>
+                                <div class="col-md-3">
+                                    <mat-form-field class="example-full-width">
+                                        <input matInput placeholder="Expiry MM" #txtExpiryMM>
+                                    </mat-form-field>
+                                </div>
+                                <div class="col-md-6">
+                                    <mat-form-field class="example-full-width">
+                                        <input matInput placeholder="CVV" #txtCvv>
+                                    </mat-form-field>
+                                </div>
+                            </div>
+                            <div class="row">
+                                <div class="col-md-12">
+                                    <label>Billing Details</label>
+                                    <mat-form-field class="example-full-width">
+                                        <textarea matInput placeholder="Please enter billing details."
+                                            #txtBilling></textarea>
+                                    </mat-form-field>
+                                </div>
+                            </div>
+                            <button mat-raised-button type="submit" class="btn btn-danger pull-right" (click)="insertSubscription(ddlPlan, txtName, txtEmail, txtPhone, txtCompany, txtBilling)">Pay &
+                                Subscribe</button>
+                            <div class="clearfix"></div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+            <div class="col-lg-6 col-md-12">
+                <div class="card">
+                    <div class="card-header card-header-warning">
+                        <h4 class="card-title">Available Countries</h4>
+                        <p class="card-category">Choose countries to get update</p>
+                    </div>
+                    <div class="card-body table-responsive">
+                        <table class="table table-hover">
+                            <thead class="text-warning">
+                                <th></th>
+                                <th>Country</th>
+                            </thead>
+                            <tbody>
+                                <tr *ngFor="let item of countryList">
+                                    <td><input type="checkbox" [(ngModel)]="item.checked"
+                                            (change)="countrySelectionChange($event, countrySpan)"></td>
+                                    <td><span #countrySpan>{{item.Name}}</span></td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

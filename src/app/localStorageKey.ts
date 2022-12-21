@@ -1,5 +1,6 @@
 export enum LocalStoragekey {
 
     UserToken = 'userToken',
-    UserRole = 'userRole'
+    UserRole = 'userRole',
+    RegistrationId = 'RegistrationId'
 }

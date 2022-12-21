@@ -18,6 +18,8 @@ import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatTooltipModule } from '@angular/material/tooltip';
 import { MatSelectModule } from '@angular/material/select';
 import { AuthGuard } from 'app/auth.guard';
+import { SubscriptionComponent } from 'app/subscription/subscription.component';
+import { ViewSubscriptionsComponent } from 'app/view-subscriptions/view-subscriptions.component';
 
 @NgModule({
   imports: [
@@ -41,6 +43,8 @@ import { AuthGuard } from 'app/auth.guard';
     MapsComponent,
     NotificationsComponent,
     UpgradeComponent,
+    SubscriptionComponent,
+    ViewSubscriptionsComponent
   ],
   providers:[AuthGuard]
 })

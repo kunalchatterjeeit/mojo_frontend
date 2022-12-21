@@ -1,11 +1,12 @@
 import { HttpClient } from '@angular/common/http';
 import { Component, OnInit } from '@angular/core';
 import { environment } from '../../../environments/environment';
-import { RegistrationService } from '../services/registration.service';
-import {formatDate} from '@angular/common';
+import { CommonService } from '../services/common.service';
+import { formatDate } from '@angular/common';
 import { LocalStoragekey } from 'app/localStorageKey';
 import { LocalStorageService } from 'app/services/local-storage.service';
 import { Router } from '@angular/router';
+import { UserMessageType } from 'app/userMessageType';
 
 @Component({
   selector: 'app-login',
@@ -15,11 +16,13 @@ import { Router } from '@angular/router';
 
 export class LoginComponent implements OnInit {
   private directBaseUrl: string = environment.directBaseUrl;
-  private baseUrl: string = environment.baseUrl;
+  private identityBaseUrl: string = environment.identityBaseUrl;
+  private apigatewayBaseUrl: string = environment.apigatewayBaseUrl;
   public userTypeList: UserType[] = [];
+  public ddlFileCategoryStatus: string = "Loading...";
 
 
-  constructor(private http: HttpClient, private router: Router) {
+  constructor(private http: HttpClient, private router: Router,private commonService: CommonService) {
     this.getUserTypeList();
   }
 
@@ -28,24 +31,24 @@ export class LoginComponent implements OnInit {
 
   getUserTypeList() {
     var headerOptions = { 'Content-Type': 'application/json' };
-    this.http.post(this.directBaseUrl + '/registration/getAllRegistrations', null, { headers: headerOptions })
+    this.http.post(this.apigatewayBaseUrl + '/registration/api/v1/registration/getUserTypeLIst', null, { headers: headerOptions })
       .subscribe(data => {
         this.returnGetAllFileCategories(data)
       }, err => {
         throw new Error('An error occured: ' + err);
-      }
-      )
+      });
   }
   returnGetAllFileCategories(data: Object): void {
+    this.ddlFileCategoryStatus = "User Type";
     this.userTypeList = data["data"] as UserType[];
     console.log(this.userTypeList);
   }
 
   createRegistration(ddlUserType, txtCompanyName, txtYourName, txtEmail, txtMobile, txtAboutMe, txtUserName, txtPassword) {
-    console.log(ddlUserType.value);
+
     var headerOptions = { 'Content-Type': 'application/json' };
     var body = JSON.stringify({
-      "userTypeId": 1,
+      "userTypeId": ddlUserType.value,
       "name": txtYourName.value,
       "email": txtEmail.value,
       "phone": txtMobile.value,
@@ -55,41 +58,41 @@ export class LoginComponent implements OnInit {
       "userName": txtUserName.value,
       "password": txtPassword.value
     });
-    this.http.post(this.directBaseUrl + '/registration/insertRegistration', body, { headers: headerOptions })
+    this.http.post(this.apigatewayBaseUrl + '/registration/api/v1/registration/insertRegistration', body, { headers: headerOptions })
       .subscribe(data => {
         this.returncreateRegistration(data)
       }, err => {
-        throw new Error('An error occured: ' + err);
+        this.commonService.showNotification('top', 'center', err, UserMessageType.Danger);
       });
   }
   returncreateRegistration(data: Object): void {
-    console.log(data);
+    console.log(data);    
+    this.commonService.showNotification('top', 'center', "Registration success. Please login.", UserMessageType.Success);
   }
 
-  login(txtLoginUserName,txtLoginPassword) {
+  login(txtLoginUserName, txtLoginPassword) {
     var headerOptions = { 'Content-Type': 'application/json' };
     var body = JSON.stringify({
       "UserName": txtLoginUserName.value,
       "Password": txtLoginPassword.value
     });
-    this.http.post(this.baseUrl + '/account', body, { headers: headerOptions })
+    this.http.post(this.identityBaseUrl + '/account', body, { headers: headerOptions })
       .subscribe(data => {
         this.returnLogin(data)
       }, err => {
-        throw new Error('An error occured: ' + err);
+        this.commonService.showNotification('top', 'center', "Invalid login credential.", UserMessageType.Danger);
       });
   }
   returnLogin(data: Object): void {
     debugger;
     if (data) {
       console.log(data["jwtToken"]);
-      new LocalStorageService().set(LocalStoragekey.UserToken, data["jwtToken"]);      
+      new LocalStorageService().set(LocalStoragekey.UserToken, data["jwtToken"]);
+      new LocalStorageService().set(LocalStoragekey.RegistrationId, data["registrationId"]);
       this.router.navigate(['dashboard']);
     }
     else {
-      // this.message = data["Message"];
-      // this.loginText = "LOGIN";
-      // this.loginDisable = false;
+      
     }
   }
 
