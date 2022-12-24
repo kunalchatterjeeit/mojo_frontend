@@ -33,20 +33,24 @@ export class DashboardComponent implements OnInit {
     });
   }
   returngetSubscriptionList(response: any): void {
-    console.log(response);
-    this.subscriptionList = response["data"] as any[];
+    console.log(response["data"]);
+    if (response["data"] && response["data"].length > 0) {
+      this.subscriptionList = response["data"] as any[];
+      if (new Date(this.subscriptionList[this.subscriptionList.length - 1]["SubscriptionEndDate"]) >= new Date()) {
+        var strCountries = this.subscriptionList[this.subscriptionList.length - 1]["SelectedCountries"].replace(/\'/g, '"');
 
-    if (this.subscriptionList[this.subscriptionList.length - 1]["SelectedCountries"] >= new Date()) {
-      var strCountries = this.subscriptionList[this.subscriptionList.length - 1]["SelectedCountries"].replace(/\'/g, '"');
-
-      JSON.parse(strCountries).forEach(country => {
-        console.log(country);
-        this.getWeatherInformation(country["Name"]);
-      })
-      console.log(this.weatherInfos);
+        JSON.parse(strCountries).forEach(country => {
+          console.log(country);
+          this.getWeatherInformation(country["Name"]);
+        })
+        console.log(this.weatherInfos);
+      }
+      else {
+        this.commonService.showNotification('top', 'center', "You do not have active subscription. Please purchase subscription to enjoy our service.", UserMessageType.Danger);
+      }
     }
     else {
-      this.commonService.showNotification('top', 'center', "You do not have active subscription. Please purchase subscription to enjoy our service.", UserMessageType.Danger);
+      this.commonService.showNotification('top', 'center', "Please purchase subscription to enjoy our service.", UserMessageType.Info);
     }
   }
 

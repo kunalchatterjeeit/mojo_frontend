@@ -63,10 +63,11 @@ export class LoginComponent implements OnInit {
     });
   }
   returnLogin(response: Object): void {
-    if (response["data"]) {
-      console.log(response["data"]["jwtToken"]);
-      new LocalStorageService().set(LocalStoragekey.UserToken, response["data"]["jwtToken"]);
-      new LocalStorageService().set(LocalStoragekey.RegistrationId, response["data"]["registrationId"]);
+    console.log(response);
+    if (response) {
+      console.log(response["jwtToken"]);
+      new LocalStorageService().set(LocalStoragekey.UserToken, response["jwtToken"]);
+      new LocalStorageService().set(LocalStoragekey.RegistrationId, response["registrationId"]);
       this.router.navigate(['dashboard']);
     }
     else {

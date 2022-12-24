@@ -100,7 +100,7 @@ export class SubscriptionComponent implements OnInit {
     var date = new Date();
     date.setDate(date.getDate() + this.days);
 
-    JSON.stringify({
+    return JSON.stringify({
       "planId": ddlPlan.value,
       "registrationId": localStorage.getItem(LocalStoragekey.RegistrationId),
       "name": name.value,
