@@ -1,10 +1,8 @@
-import { HttpClient } from '@angular/common/http';
 import { Component, OnInit } from '@angular/core';
-import { Router } from '@angular/router';
 import { LocalStoragekey } from 'app/localStorageKey';
 import { CommonService } from 'app/services/common.service';
 import { UserMessageType } from 'app/userMessageType';
-import { environment } from '../../../environments/environment';
+import { SubscriptionService } from 'app/services/subscription.service';
 
 @Component({
   selector: 'app-view-subscriptions',
@@ -12,12 +10,9 @@ import { environment } from '../../../environments/environment';
   styleUrls: ['./view-subscriptions.component.scss']
 })
 export class ViewSubscriptionsComponent implements OnInit {
-  private directBaseUrl: string = environment.directBaseUrl;
-  private identityBaseUrl: string = environment.identityBaseUrl;
-  private apigatewayBaseUrl: string = environment.apigatewayBaseUrl;
   public subscriptionList: any[] = [];
 
-  constructor(private http: HttpClient, private router: Router, private commonService: CommonService) {
+  constructor(private commonService: CommonService, private subscriptionService: SubscriptionService) {
     this.getSubscriptionList();
   }
 
@@ -25,12 +20,10 @@ export class ViewSubscriptionsComponent implements OnInit {
   }
 
   getSubscriptionList() {
-    var headerOptions = { 'Content-Type': 'application/json' };
     var body = JSON.stringify({
       "registrationId": localStorage.getItem(LocalStoragekey.RegistrationId),
     });
-    this.http.post(this.apigatewayBaseUrl + '/subscription/api/v1/subscription/getAllSubscriptions', body, { headers: headerOptions })
-      .subscribe({
+    this.subscriptionService.getAllSubscriptions(body).subscribe({
         next: this.returnGetAllFileCategories.bind(this),
         error: this.handleError.bind(this)
       });

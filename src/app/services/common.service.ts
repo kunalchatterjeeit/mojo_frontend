@@ -3,7 +3,6 @@ import { LocalStorageService } from '../services/local-storage.service';
 import { LocalStoragekey } from '../localStorageKey';
 import { UserMessageType } from '../userMessageType';
 import { HttpClient } from '@angular/common/http';
-import { environment } from 'environments/environment'
 
 declare var $: any;
 
@@ -11,7 +10,6 @@ declare var $: any;
   providedIn: 'root'
 })
 export class CommonService {
-  private baseUrl: string = environment.baseUrl;
   FileId: string = "";
 
   constructor(private http: HttpClient) { }

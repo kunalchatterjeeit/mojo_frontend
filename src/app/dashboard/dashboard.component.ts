@@ -2,11 +2,9 @@ import { HttpClient } from '@angular/common/http';
 import { Component, OnInit } from '@angular/core';
 import { Router } from '@angular/router';
 import { LocalStoragekey } from 'app/localStorageKey';
-import { Country } from 'app/models/country';
 import { CommonService } from 'app/services/common.service';
 import { UserMessageType } from 'app/userMessageType';
-import * as Chartist from 'chartist';
-import { environment } from '../../../environments/environment';
+import { SubscriptionService } from 'app/services/subscription.service';
 
 @Component({
   selector: 'app-dashboard',
@@ -14,13 +12,10 @@ import { environment } from '../../../environments/environment';
   styleUrls: ['./dashboard.component.css']
 })
 export class DashboardComponent implements OnInit {
-  private directBaseUrl: string = environment.directBaseUrl;
-  private identityBaseUrl: string = environment.identityBaseUrl;
-  private apigatewayBaseUrl: string = environment.apigatewayBaseUrl;
   public subscriptionList: any[] = [];
-  public weatherInfos: any[]=[];
+  public weatherInfos: any[] = [];
 
-  constructor(private http: HttpClient, private router: Router, private commonService: CommonService) { 
+  constructor(private http: HttpClient, private router: Router, private commonService: CommonService, private subscriptionService: SubscriptionService) {
     this.getSubscriptionList();
   }
 
@@ -29,40 +24,46 @@ export class DashboardComponent implements OnInit {
   }
 
   getSubscriptionList() {
-    var headerOptions = { 'Content-Type': 'application/json' };
     var body = JSON.stringify({
       "registrationId": localStorage.getItem(LocalStoragekey.RegistrationId),
     });
-    this.http.post(this.apigatewayBaseUrl + '/subscription/api/v1/subscription/getAllSubscriptions', body, { headers: headerOptions })
-      .subscribe({
-        next: this.returngetSubscriptionList.bind(this),
-        error: this.handleError.bind(this)
-      });
+    this.subscriptionService.getAllSubscriptions(body).subscribe({
+      next: this.returngetSubscriptionList.bind(this),
+      error: this.handleError.bind(this)
+    });
   }
   returngetSubscriptionList(response: any): void {
-    console.log(response);
-    this.subscriptionList = response["data"] as any[];
-    var strCountries = this.subscriptionList[this.subscriptionList.length-1]["SelectedCountries"].replace(/\'/g,'"');
-   
-    JSON.parse(strCountries).forEach(country=>{
-      console.log(country);
-      this.getWeatherInformation(country["Name"]);
-    })
-    console.log(this.weatherInfos);
+    console.log(response["data"]);
+    if (response["data"] && response["data"].length > 0) {
+      this.subscriptionList = response["data"] as any[];
+      if (new Date(this.subscriptionList[this.subscriptionList.length - 1]["SubscriptionEndDate"]) >= new Date()) {
+        var strCountries = this.subscriptionList[this.subscriptionList.length - 1]["SelectedCountries"].replace(/\'/g, '"');
+
+        JSON.parse(strCountries).forEach(country => {
+          console.log(country);
+          this.getWeatherInformation(country["Name"]);
+        })
+        console.log(this.weatherInfos);
+      }
+      else {
+        this.commonService.showNotification('top', 'center', "You do not have active subscription. Please purchase subscription to enjoy our service.", UserMessageType.Danger);
+      }
+    }
+    else {
+      this.commonService.showNotification('top', 'center', "Please purchase subscription to enjoy our service.", UserMessageType.Info);
+    }
   }
 
   getWeatherInformation(country: string) {
-    var headerOptions = { 'Content-Type': 'application/json' };
     var body = JSON.stringify({
       "country": country,
     });
-    this.http.post(this.apigatewayBaseUrl + '/weather/api/v1/subscription/weatherInfo', body, { headers: headerOptions })
-      .subscribe({
-        next: this.returnWeatherInfos.bind(this),
-        error: this.handleError.bind(this)
-      });
+    this.subscriptionService.getWeatherInfo(body).subscribe({
+      next: this.returnWeatherInfos.bind(this),
+      error: this.handleError.bind(this)
+    });
   }
-  returnWeatherInfos(response:any):void{
+  returnWeatherInfos(response: any): void {
     this.weatherInfos.push(response);
   }
   handleError(error: any): void {

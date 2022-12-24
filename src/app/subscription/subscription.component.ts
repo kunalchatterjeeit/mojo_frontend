@@ -1,15 +1,11 @@
-import { HttpClient } from '@angular/common/http';
 import { Component, OnInit } from '@angular/core';
-import { environment } from '../../../environments/environment';
 import { RegistrationService } from '../services/registration.service';
 import { formatDate } from '@angular/common';
 import { LocalStoragekey } from 'app/localStorageKey';
-import { LocalStorageService } from 'app/services/local-storage.service';
-import { Router } from '@angular/router';
-import { Options } from 'selenium-webdriver';
 import { CommonService } from 'app/services/common.service';
 import { UserMessageType } from 'app/userMessageType';
 import { Country } from 'app/models/country';
+import { SubscriptionService } from 'app/services/subscription.service';
 
 @Component({
   selector: 'app-subscription',
@@ -17,9 +13,6 @@ import { Country } from 'app/models/country';
   styleUrls: ['./subscription.component.scss']
 })
 export class SubscriptionComponent implements OnInit {
-  private directBaseUrl: string = environment.directBaseUrl;
-  private identityBaseUrl: string = environment.identityBaseUrl;
-  private apigatewayBaseUrl: string = environment.apigatewayBaseUrl;
   public planList: any[] = [];
   public pricingList: any[] = [];
   public ddlFileCategoryStatus: string = "Loading...";
@@ -37,17 +30,11 @@ export class SubscriptionComponent implements OnInit {
   public name: any = "";
   public email: any = "";
   public phone: any = "";
-  // public countryList = [
-  //   { 'Country': 'United Arab Emirates', 'checked': false, 'Slot': '' },
-  //   { 'Country': 'India', 'checked': false, 'Slot': '' },
-  //   { 'Country': 'United States', 'checked': false, 'Slot': '' },
-  //   { 'Country': 'United Kingdom', 'checked': false, 'Slot': '' }
-  // ];
-  public countryList: Country[]=[];
+  public countryList: Country[] = [];
   public days: any;
 
 
-  constructor(private http: HttpClient, private router: Router, private commonService: CommonService) {
+  constructor(private commonService: CommonService, private subscriptionService: SubscriptionService, private registrationService: RegistrationService) {
     this.getPlanList();
     this.getCountryList();
     this.getRegistrationById(localStorage.getItem(LocalStoragekey.RegistrationId));
@@ -57,26 +44,22 @@ export class SubscriptionComponent implements OnInit {
   }
 
   getPlanList() {
-    this.http.get(this.apigatewayBaseUrl + '/subscription/api/v1/subscription/getPricingList')
-      .subscribe({
-        next: this.returnGetAllFileCategories.bind(this),
-        error: this.handleError.bind(this)
-      });
+    this.subscriptionService.getPlanList().subscribe({
+      next: this.returnGetAllFileCategories.bind(this),
+      error: this.handleError.bind(this)
+    });
   }
   returnGetAllFileCategories(response: any): void {
     console.log(response);
     this.ddlFileCategoryStatus = "Plan";
     this.planList = response["data"] as any[];
-    console.log(this.planList);
-
   }
 
   getCountryList() {
-    this.http.get(this.apigatewayBaseUrl + '/subscription/api/v1/subscription/getCountryList')
-      .subscribe({
-        next: this.returngetCountryList.bind(this),
-        error: this.handleError.bind(this)
-      });
+    this.subscriptionService.getCountryList().subscribe({
+      next: this.returngetCountryList.bind(this),
+      error: this.handleError.bind(this)
+    });
   }
   returngetCountryList(response: any): void {
     console.log(response);
@@ -86,15 +69,13 @@ export class SubscriptionComponent implements OnInit {
   }
 
   getRegistrationById(id: any) {
-    var headerOptions = { 'Content-Type': 'application/json' };
     var body = JSON.stringify({
       "registrationId": id,
     });
-    this.http.post(this.directBaseUrl + '/registration/getRegistrationyById', body, { headers: headerOptions })
-      .subscribe({
-        next: this.returngetRegistrationById.bind(this),
-        error: this.handleError.bind(this)
-      });
+    this.registrationService.getRegistrationById(body).subscribe({
+      next: this.returngetRegistrationById.bind(this),
+      error: this.handleError.bind(this)
+    });
   }
   returngetRegistrationById(response: any): void {
     console.log(response);
@@ -103,17 +84,23 @@ export class SubscriptionComponent implements OnInit {
     this.email = response["data"][0]["Email"];
     this.phone = response["data"][0]["Phone"];
   }
+
   insertSubscription(ddlPlan, name, email, phone, companyName, billingDetails) {
     if (this.countryList.filter(p => p.checked).toString() == "") {
       this.commonService.showNotification('top', 'center', "Please select country.", UserMessageType.Danger);
       return;
     }
-
+    var body = this.createSubscriptionBody(ddlPlan, name, email, phone, companyName, billingDetails)
+    this.subscriptionService.insertSubscription(body).subscribe({
+      next: this.returninsertSubscription.bind(this),
+      error: this.handleError.bind(this)
+    });
+  }
+  createSubscriptionBody(ddlPlan: any, name: any, email: any, phone: any, companyName: any, billingDetails: any) {
     var date = new Date();
     date.setDate(date.getDate() + this.days);
 
-    var headerOptions = { 'Content-Type': 'application/json' };
-    var body = JSON.stringify({
+    return JSON.stringify({
       "planId": ddlPlan.value,
       "registrationId": localStorage.getItem(LocalStoragekey.RegistrationId),
       "name": name.value,
@@ -127,11 +114,6 @@ export class SubscriptionComponent implements OnInit {
       "subscriptionStatusId": 1,
       "selectedCountries": JSON.stringify(this.countryList.filter(p => p.checked)).replace(/"/g, '\'')
     });
-    this.http.post(this.apigatewayBaseUrl + '/subscription/api/v1/subscription/insertSubscription', body, { headers: headerOptions })
-      .subscribe({
-        next: this.returninsertSubscription.bind(this),
-        error: this.handleError.bind(this)
-      });
   }
   returninsertSubscription(response: any): void {
     console.log(response);
